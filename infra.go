@@ -1,4 +1,4 @@
-package main
+package infra
 
 import (
 	"fmt"
@@ -6,7 +6,6 @@ import (
 	"os"
 	"net"
 	"strings"
-	"time"
 	"github.com/melhalab/node"
 	"gopkg.in/yaml.v2"
 )
@@ -51,7 +50,7 @@ func listenerThread(conn *net.TCPConn) {
 	}
 }
 
-func sendUnicast(dest string, message string) {
+func SendUnicast(dest string, message string) {
 	conn := connectionMap[dest]
 	_, err := conn.Write([]byte(message))
 	checkError(err)
@@ -133,15 +132,9 @@ func acceptConnectionsFromOtherServers(pYamlConfig *YamlConfig, localHost string
 	fmt.Println("*** Done Accepting Connections ***")
 }
 
-func main() {
-
-	if len(os.Args) != 2 {
-		fmt.Fprintf(os.Stderr, "Usage: %s Hostname\n", os.Args[0])
-		os.Exit(1)
-	}
+func InitNetwork(localHost string) {
 	nodeIndexMap = map[string]*node.Node{}
 	connectionMap = map[string]*net.TCPConn{}
-	localHost := os.Args[1]
 	vnodeNum := 2
 	var yamlConfig YamlConfig
 	err := yamlConfig.ParseYaml("nodes.yml")
@@ -167,16 +160,6 @@ func main() {
 	fmt.Println("***************************************************")
 	fmt.Println("****** Done all conections and back to main *******")
 	fmt.Println("***************************************************")
-	/* Test code for the send and listener threads */
-	for {
-		if localHost == "Alice" {
-			sendUnicast("Bob", "This is a test message 2 from Alice to Bob\n")
-		} else if localHost == "Bob" {
-			sendUnicast("Alice", "This is a test message 2 from Bob to Alice\n")	
-		}
-		time.Sleep(5000)
-	}
-	/* end of test code -- remove when merging code */
 }
 
 func checkError(err error) {
